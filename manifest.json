@@ -1,0 +1,10 @@
+{
+  "name": "AniStream - Anime Episode Guide",
+  "short_name": "AniStream",
+  "description": "Anime episode guides with links to licensed streaming options.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0a14",
+  "theme_color": "#8b5cf6"
+}
