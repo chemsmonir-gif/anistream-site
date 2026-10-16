@@ -1083,7 +1083,7 @@
 
     @media (max-width: 1024px) {
       .player-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
     }
 
@@ -2615,6 +2615,30 @@
       .mobile-bottom-nav {
         display: flex;
       }
+      .player-row,
+      .player-col {
+        width: 100%;
+        min-width: 0;
+      }
+      .player-controls-bar {
+        justify-content: flex-start;
+        min-width: 0;
+        width: 100%;
+      }
+      .player-controls-bar > * {
+        min-width: 0;
+        max-width: 100%;
+        flex-wrap: wrap;
+      }
+      .server-selector {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+      .audio-track-selector,
+      .subtitles-control-wrap {
+        max-width: 100%;
+        flex-wrap: wrap;
+      }
     }
 
     @media (max-width: 420px) {
@@ -2639,13 +2663,35 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 12px;
       }
-      .player-controls-bar {
-        padding: 10px;
+      .player-controls-bar { padding: 10px; }
+      .comments-section {
+        min-width: 0;
+        padding: 18px;
       }
-      .audio-track-selector {
+      .comment-form-wrap,
+      .comment-input-box {
+        min-width: 0;
+      }
+      .comment-form-wrap {
+        gap: 10px;
+      }
+      .comment-user-inputs {
+        min-width: 0;
         flex-wrap: wrap;
       }
-      .server-selector {
+      .comment-username-input {
+        min-width: 0;
+        max-width: 100%;
+      }
+      .comment-textarea {
+        min-width: 0;
+      }
+      .comment-form-footer {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .emoji-quick-bar {
+        max-width: 100%;
         flex-wrap: wrap;
       }
     }
