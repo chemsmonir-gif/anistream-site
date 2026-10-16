@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#090a10" />
+    <title>AnimeTock — Anime trailers &amp; edits</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #090a10;
+        --panel: #11121a;
+        --muted: #a4a4b4;
+        --pink: #ff4d8d;
+        --cyan: #53e9e5;
+        --white: #f8f7ff;
+      }
+
+      * { box-sizing: border-box; }
+      html { height: 100%; scroll-behavior: smooth; }
+
+      body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        color: var(--white);
+        background:
+          radial-gradient(ellipse at 46% 40%, rgba(69, 41, 110, .13), transparent 45%),
+          var(--bg);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+
+      button { color: inherit; font: inherit; }
+
+      .app {
+        display: grid;
+        grid-template-columns: 238px minmax(0, 1fr) 300px;
+        width: 100%;
+        height: 100dvh;
+        min-height: 520px;
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        padding: 30px 20px 22px 30px;
+        border-right: 1px solid rgba(255,255,255,.07);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        width: fit-content;
+        color: var(--white);
+        text-decoration: none;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 37px;
+        height: 37px;
+        place-items: center;
+        border: 1px solid rgba(255,77,141,.65);
+        border-radius: 12px;
+        background: linear-gradient(145deg, rgba(255,77,141,.25), rgba(83,233,229,.08));
+        box-shadow: 0 0 25px rgba(255,77,141,.16), inset 0 0 15px rgba(83,233,229,.08);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 950;
+        letter-spacing: -.1em;
+        text-shadow: 0 0 10px var(--pink);
+      }
+
+      .brand-name {
+        font-size: 20px;
+        font-weight: 850;
+        letter-spacing: -.7px;
+      }
+
+      .brand-name span { color: var(--pink); }
+
+      .nav-label {
+        margin: 0 0 10px 12px;
+        color: #6f7080;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .19em;
+        text-transform: uppercase;
+      }
+
+      .nav-list { display: grid; gap: 6px; }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+        padding: 12px;
+        border: 0;
+        border-radius: 12px;
+        background: transparent;
+        color: #b7b7c4;
+        text-align: left;
+        cursor: pointer;
+        transition: background .2s, color .2s, transform .2s;
+      }
+
+      .nav-item:hover { background: rgba(255,255,255,.055); color: white; transform: translateX(2px); }
+      .nav-item.active { background: linear-gradient(90deg, rgba(255,77,141,.16), transparent); color: #fff; }
+      .nav-item.active .nav-icon { color: var(--pink); }
+      .nav-icon { width: 21px; color: #858696; font-size: 19px; text-align: center; }
+
+      .side-note {
+        margin-top: auto;
+        padding: 16px;
+        border: 1px solid rgba(255,255,255,.07);
+        border-radius: 15px;
+        background: linear-gradient(140deg, rgba(255,77,141,.08), rgba(83,233,229,.035));
+      }
+
+      .side-note strong { display: block; margin-bottom: 6px; font-size: 12px; }
+      .side-note p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+      .account-actions { display: grid; gap: 8px; }
+      .account-actions button {
+        min-height: 40px;
+        border: 1px solid rgba(255,77,141,.4);
+        border-radius: 10px;
+        background: rgba(255,77,141,.12);
+        color: #ffe8f1;
+        font-size: 12px;
+        font-weight: 750;
+        cursor: pointer;
+      }
+      .account-actions button + button { border-color: rgba(255,255,255,.12); background: transparent; color: #c4c4d1; }
+
+      .feed-column {
+        position: relative;
+        display: flex;
+        min-width: 0;
+        min-height: 0;
+        flex-direction: column;
+        align-items: center;
+        padding: 18px 28px 20px;
+      }
+
+      .feed-top {
+        z-index: 5;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        width: 100%;
+        height: 44px;
+      }
+
+      .feed-tab {
+        position: relative;
+        padding: 10px 2px;
+        border: 0;
+        background: transparent;
+        color: #878896;
+        font-size: 13px;
+        font-weight: 750;
+        cursor: pointer;
+      }
+
+      .feed-tab.active { color: white; }
+      .feed-tab.active::after {
+        position: absolute;
+        right: 0;
+        bottom: 1px;
+        left: 0;
+        height: 2px;
+        border-radius: 4px;
+        background: var(--pink);
+        box-shadow: 0 0 12px rgba(255,77,141,.6);
+        content: "";
+      }
+
+      .feed {
+        position: relative;
+        width: min(100%, 390px);
+        min-height: 0;
+        flex: 1;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+        scroll-snap-type: y mandatory;
+        border-radius: 18px;
+      }
+
+      .feed::-webkit-scrollbar { display: none; }
+      .reel[hidden] { display: none; }
+
+      .reel {
+        position: relative;
+        isolation: isolate;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        min-height: 460px;
+        flex-direction: column;
+        justify-content: flex-end;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 18px;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        background: #171321;
+      }
+
+      .scene {
+        position: absolute;
+        z-index: -2;
+        inset: 0;
+        overflow: hidden;
+        background:
+          radial-gradient(ellipse at 51% 50%, var(--scene-glow, rgba(191,62,137,.34)), transparent 37%),
+          linear-gradient(180deg, var(--scene-top, #29213f), var(--scene-bottom, #0b101a));
+      }
+
+      .scene::before {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(180deg, rgba(9,9,17,.02) 35%, rgba(6,7,12,.86) 100%),
+          repeating-linear-gradient(125deg, transparent 0 48px, rgba(255,255,255,.025) 49px 50px);
+        content: "";
+      }
+
+      .scene::after {
+        position: absolute;
+        inset: -20%;
+        background: radial-gradient(ellipse at 50% 44%, transparent 22%, rgba(2,3,8,.62) 85%);
+        content: "";
+      }
+
+      .scene-one { --scene-glow: rgba(191,62,137,.4); --scene-top: #352149; --scene-bottom: #08131b; }
+      .scene-two { --scene-glow: rgba(39,164,208,.36); --scene-top: #102b49; --scene-bottom: #0b1020; }
+      .scene-three { --scene-glow: rgba(235,132,55,.29); --scene-top: #3d2535; --scene-bottom: #15101b; }
+      .scene-naruto { --scene-glow: rgba(255,139,43,.38); --scene-top: #563027; --scene-bottom: #17101a; }
+      .scene-jjk { --scene-glow: rgba(159,75,255,.36); --scene-top: #282044; --scene-bottom: #0b101b; }
+
+      .scene-naruto .sky-orb {
+        background: radial-gradient(circle at 35% 35%, #fff5c9, #ffbf68 35%, #ec7548 72%, transparent 74%);
+        filter: drop-shadow(0 0 34px rgba(255,156,68,.62));
+      }
+
+      .scene-naruto .hair,
+      .scene-naruto .fringe {
+        background: linear-gradient(120deg, #ffdf88, #f28b38 52%, #b94b3d);
+      }
+
+      .scene-naruto .coat {
+        background: linear-gradient(100deg, #a84538, #f19848 51%, #74334a);
+      }
+
+      .scene-naruto .coat::after { background: linear-gradient(#ffe6a0, transparent); box-shadow: 0 0 12px #ffbe56; }
+      .scene-naruto .trail { --trail: #ffb44d; }
+      .scene-naruto .trail.two { --trail: #fff0a4; }
+
+      .scene-jjk .sky-orb {
+        background: radial-gradient(circle at 35% 35%, #f0ddff, #bf79ff 42%, #633fc5 74%, transparent 76%);
+        filter: drop-shadow(0 0 34px rgba(177,110,255,.75));
+      }
+
+      .scene-jjk .hair,
+      .scene-jjk .fringe {
+        background: linear-gradient(120deg, #aeb7ff, #6553a0 52%, #201c3c);
+      }
+
+      .scene-jjk .coat {
+        background: linear-gradient(100deg, #19172f, #504270 51%, #19172f);
+      }
+
+      .scene-jjk .coat::after { background: linear-gradient(#c698ff, transparent); box-shadow: 0 0 12px #b27cff; }
+      .scene-jjk .trail { --trail: #c17cff; }
+      .scene-jjk .trail.two { --trail: #5ce8ef; }
+
+      .sky-orb {
+        position: absolute;
+        top: 12%;
+        right: 12%;
+        width: 88px;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #fff5ee, #f4b6cb 28%, #dd658d 70%, transparent 72%);
+        filter: drop-shadow(0 0 28px rgba(255,144,188,.55));
+        opacity: .8;
+        animation: orb-drift 7s ease-in-out infinite alternate;
+      }
+
+      .scene-two .sky-orb {
+        top: 14%;
+        right: 14%;
+        width: 64px;
+        background: radial-gradient(circle at 35% 35%, #e7ffff, #64dce7 40%, #3283c5 72%, transparent 74%);
+        filter: drop-shadow(0 0 32px rgba(83,233,229,.65));
+      }
+
+      .scene-three .sky-orb {
+        top: 18%;
+        right: 19%;
+        width: 70px;
+        background: radial-gradient(circle at 35% 35%, #fff2db, #f8af75 45%, #cf4762 76%, transparent 78%);
+      }
+
+      .mountain {
+        position: absolute;
+        right: -12%;
+        bottom: 15%;
+        left: -12%;
+        height: 30%;
+        background: linear-gradient(160deg, rgba(37,31,57,.2), #111421 72%);
+        clip-path: polygon(0 78%, 16% 52%, 26% 68%, 42% 27%, 58% 68%, 75% 35%, 100% 76%, 100% 100%, 0 100%);
+      }
+
+      .mountain.back {
+        bottom: 20%;
+        height: 35%;
+        opacity: .56;
+        transform: scaleX(-1);
+        filter: brightness(1.35);
+      }
+
+      .horizon {
+        position: absolute;
+        right: -5%;
+        bottom: 17%;
+        left: -5%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,.48), transparent);
+        box-shadow: 0 0 18px var(--pink);
+        opacity: .45;
+      }
+
+      .character {
+        position: absolute;
+        bottom: 23%;
+        left: 50%;
+        width: 184px;
+        height: 270px;
+        transform: translateX(-50%);
+        animation: hero-float 3.8s ease-in-out infinite;
+      }
+
+      .hair {
+        position: absolute;
+        z-index: 3;
+        top: 13px;
+        left: 37px;
+        width: 112px;
+        height: 96px;
+        border-radius: 52% 48% 43% 43%;
+        background: linear-gradient(120deg, #171725 6%, #41304d 48%, #161723 88%);
+        clip-path: polygon(5% 42%, 15% 10%, 40% 0, 63% 9%, 89% 0, 96% 36%, 88% 35%, 93% 58%, 79% 48%, 76% 77%, 63% 57%, 58% 100%, 44% 65%, 31% 89%, 29% 57%, 10% 73%, 16% 49%, 0 62%);
+        filter: drop-shadow(0 0 13px rgba(255,77,141,.22));
+      }
+
+      .face {
+        position: absolute;
+        z-index: 2;
+        top: 39px;
+        left: 54px;
+        width: 76px;
+        height: 91px;
+        border-radius: 45% 45% 48% 48%;
+        background: linear-gradient(120deg, #f4c5b7, #d28f91 78%);
+        box-shadow: inset -9px 0 12px rgba(75,34,58,.18);
+      }
+
+      .eye {
+        position: absolute;
+        top: 45px;
+        left: 67px;
+        width: 10px;
+        height: 15px;
+        border-radius: 50%;
+        background: #172232;
+        box-shadow: 2px 0 0 #f9d4e4, 0 0 8px rgba(83,233,229,.5);
+      }
+
+      .eye.right { left: 105px; }
+
+      .fringe {
+        position: absolute;
+        z-index: 4;
+        top: 14px;
+        left: 43px;
+        width: 98px;
+        height: 61px;
+        background: linear-gradient(140deg, #262033, #171722);
+        clip-path: polygon(0 0, 100% 0, 89% 73%, 72% 42%, 60% 100%, 46% 42%, 30% 85%, 25% 38%, 10% 69%);
+      }
+
+      .neck {
+        position: absolute;
+        z-index: 1;
+        top: 116px;
+        left: 75px;
+        width: 35px;
+        height: 37px;
+        background: #bd7f83;
+      }
+
+      .coat {
+        position: absolute;
+        top: 138px;
+        left: 23px;
+        width: 138px;
+        height: 145px;
+        background: linear-gradient(100deg, #171b2c, #35445b 51%, #171b2c);
+        clip-path: polygon(31% 0, 50% 11%, 68% 0, 91% 12%, 100% 100%, 0 100%, 9% 12%);
+        filter: drop-shadow(0 0 16px rgba(83,233,229,.12));
+      }
+
+      .coat::after {
+        position: absolute;
+        top: 18px;
+        left: 67px;
+        width: 3px;
+        height: 110px;
+        background: linear-gradient(var(--cyan), transparent);
+        box-shadow: 0 0 12px var(--cyan);
+        content: "";
+      }
+
+      .trail {
+        position: absolute;
+        z-index: 1;
+        top: 43%;
+        left: -50%;
+        width: 200%;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, var(--trail, #ff6cae), #fff, var(--trail, #ff6cae), transparent);
+        box-shadow: 0 0 10px var(--trail, #ff6cae), 0 0 32px var(--trail, #ff6cae);
+        opacity: 0;
+        transform: rotate(-20deg);
+        animation: slash 4.8s ease-in-out infinite;
+      }
+
+      .trail.two {
+        top: 55%;
+        --trail: #54e7ed;
+        animation-delay: 2.1s;
+        animation-duration: 5.6s;
+        transform: rotate(18deg);
+      }
+
+      .spark {
+        position: absolute;
+        z-index: 2;
+        top: 47%;
+        left: 50%;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: white;
+        box-shadow: 0 0 10px 4px var(--trail, #ff6cae);
+        opacity: 0;
+        animation: spark 4.8s ease-out infinite;
+      }
+
+      .scene-two .character { animation-delay: -.8s; filter: hue-rotate(14deg); }
+      .scene-three .character { animation-delay: -1.7s; filter: hue-rotate(-18deg); }
+
+      .film-grain {
+        position: absolute;
+        z-index: 3;
+        inset: 0;
+        pointer-events: none;
+        opacity: .1;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
+        mix-blend-mode: screen;
+      }
+
+      .reel-top {
+        position: absolute;
+        z-index: 4;
+        top: 17px;
+        right: 16px;
+        left: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: rgba(255,255,255,.84);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .13em;
+        text-transform: uppercase;
+        text-shadow: 0 1px 8px #090a10;
+      }
+
+      .quality {
+        padding: 6px 8px;
+        border: 1px solid rgba(255,255,255,.24);
+        border-radius: 6px;
+        background: rgba(10,10,16,.25);
+        backdrop-filter: blur(8px);
+      }
+
+      .reel-copy {
+        position: absolute;
+        z-index: 4;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        padding: 92px 68px 27px 19px;
+        background: linear-gradient(180deg, transparent 0%, rgba(8,9,16,.48) 20%, rgba(8,9,16,.94) 100%);
+        text-shadow: 0 2px 12px rgba(0,0,0,.8);
+      }
+
+      .creator {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 9px;
+        font-size: 13px;
+        font-weight: 780;
+      }
+
+      .avatar {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border: 1px solid rgba(255,255,255,.38);
+        border-radius: 50%;
+        background: linear-gradient(140deg, #ff6cae, #5448ab 55%, #53e9e5);
+        color: white;
+        font-size: 10px;
+        font-weight: 900;
+      }
+
+      .follow {
+        padding: 4px 9px;
+        border: 1px solid rgba(255,77,141,.9);
+        border-radius: 999px;
+        background: rgba(255,77,141,.15);
+        color: #ffd6e5;
+        font-size: 10px;
+        cursor: pointer;
+      }
+
+      .reel-copy p {
+        margin: 0 0 8px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .tags { color: #f6c7df; font-size: 11px; }
+      .soundline { margin-top: 10px; color: rgba(255,255,255,.78); font-size: 10px; }
+
+      .reel-actions {
+        position: absolute;
+        z-index: 5;
+        right: 11px;
+        bottom: 25px;
+        display: grid;
+        justify-items: center;
+        gap: 15px;
+      }
+
+      .action {
+        display: grid;
+        justify-items: center;
+        gap: 4px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: white;
+        cursor: pointer;
+        text-shadow: 0 1px 6px #080910;
+        transition: transform .18s, color .18s;
+      }
+
+      .action:hover { transform: scale(1.12); }
+      .action .glyph { font-size: 23px; line-height: 1; }
+      .action .glyph {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border: 1px solid rgba(255,255,255,.16);
+        border-radius: 50%;
+        background: rgba(14,14,22,.46);
+        backdrop-filter: blur(10px);
+      }
+      .action .count { font-size: 9px; font-weight: 750; }
+      .action.liked { color: var(--pink); }
+      .action.liked .glyph { animation: heart-pop .32s ease-out; }
+      .action.following { color: var(--cyan); }
+
+      .progress {
+        position: absolute;
+        z-index: 6;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: rgba(255,255,255,.18);
+      }
+
+      .progress::before {
+        display: block;
+        width: 38%;
+        height: 100%;
+        background: linear-gradient(90deg, var(--pink), var(--cyan));
+        box-shadow: 0 0 10px rgba(255,77,141,.7);
+        content: "";
+        animation: progress 9s linear infinite;
+      }
+
+      .side-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        padding: 27px 24px 22px 20px;
+        border-left: 1px solid rgba(255,255,255,.07);
+      }
+
+      .search {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 11px 13px;
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 11px;
+        background: rgba(255,255,255,.045);
+        color: #9091a0;
+        font-size: 12px;
+      }
+      .search input {
+        width: 100%;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: white;
+        font: inherit;
+      }
+      .search:focus-within { border-color: rgba(255,77,141,.55); box-shadow: 0 0 0 3px rgba(255,77,141,.08); }
+      .search input::placeholder { color: #9091a0; }
+      .search input {
+        width: 100%;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: white;
+        font: inherit;
+      }
+      .search:focus-within { border-color: rgba(255,77,141,.55); box-shadow: 0 0 0 3px rgba(255,77,141,.08); }
+      .search input::placeholder { color: #9091a0; }
+
+      .panel-heading {
+        margin: 0 0 12px;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .genres { display: flex; flex-wrap: wrap; gap: 7px; }
+
+      .genre {
+        padding: 7px 9px;
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 999px;
+        background: rgba(255,255,255,.035);
+        color: #c3c3d0;
+        font-size: 10px;
+      }
+
+      .genre.hot { border-color: rgba(255,77,141,.26); background: rgba(255,77,141,.09); color: #ffc6dc; }
+
+      .trending { display: grid; gap: 12px; }
+
+      .trend {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .trend-art {
+        position: relative;
+        width: 44px;
+        height: 54px;
+        flex: 0 0 auto;
+        overflow: hidden;
+        border-radius: 8px;
+        background:
+          radial-gradient(ellipse at 50% 40%, rgba(255,255,255,.45), transparent 20%),
+          linear-gradient(145deg, #b54d89, #302853 60%, #0e1423);
+      }
+
+      .trend:nth-child(2) .trend-art { background: radial-gradient(circle at 70% 28%, #88f7eb, transparent 22%), linear-gradient(145deg, #246b85, #242442 60%, #10111a); }
+      .trend:nth-child(3) .trend-art { background: radial-gradient(circle at 30% 30%, #ffe29d, transparent 21%), linear-gradient(145deg, #ac514f, #472544 60%, #15121a); }
+
+      .trend-art::after {
+        position: absolute;
+        right: 8px;
+        bottom: -5px;
+        left: 8px;
+        height: 33px;
+        border-radius: 50% 50% 0 0;
+        background: rgba(12,14,25,.82);
+        content: "";
+      }
+
+      .trend-title { margin: 0 0 4px; font-size: 11px; font-weight: 750; }
+      .trend-meta { margin: 0; color: var(--muted); font-size: 10px; }
+
+      .disclaimer {
+        margin-top: auto;
+        color: #767786;
+        font-size: 10px;
+        line-height: 1.6;
+      }
+
+      .mobile-brand, .mobile-nav { display: none; }
+
+      .dialog {
+        width: min(430px, calc(100vw - 32px));
+        max-height: min(680px, calc(100dvh - 32px));
+        padding: 0;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 20px;
+        background: #11121b;
+        color: var(--white);
+        box-shadow: 0 24px 100px rgba(0,0,0,.7), 0 0 50px rgba(255,77,141,.1);
+      }
+      .dialog::backdrop { background: rgba(4,5,10,.74); backdrop-filter: blur(8px); }
+      .dialog-shell { display: flex; max-height: inherit; flex-direction: column; }
+      .dialog-head { display: flex; align-items: center; justify-content: space-between; padding: 19px 21px; border-bottom: 1px solid rgba(255,255,255,.08); }
+      .dialog-head h2 { margin: 0; font-size: 17px; letter-spacing: -.3px; }
+      .dialog-close { display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid rgba(255,255,255,.1); border-radius: 50%; background: rgba(255,255,255,.05); color: #dedee8; cursor: pointer; }
+      .dialog-content { padding: 20px; overflow-y: auto; }
+      .dialog-note { margin: 0 0 17px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+      .dialog-form { display: grid; gap: 12px; }
+      .dialog-form label { display: grid; gap: 6px; color: #c9c9d5; font-size: 11px; font-weight: 700; }
+      .dialog-form input, .dialog-form textarea { width: 100%; padding: 12px 13px; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; outline: 0; background: rgba(255,255,255,.045); color: white; font: inherit; font-size: 13px; }
+      .dialog-form input:focus, .dialog-form textarea:focus { border-color: var(--pink); }
+      .dialog-form textarea { min-height: 84px; resize: vertical; }
+      .primary-button { min-height: 42px; border: 0; border-radius: 10px; background: linear-gradient(100deg, #ff4d8d, #b65cff); color: white; font-size: 13px; font-weight: 800; cursor: pointer; }
+      .secondary-button { min-height: 40px; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; background: rgba(255,255,255,.04); color: #eee; font-size: 12px; font-weight: 700; cursor: pointer; }
+      .dialog-switch { display: flex; justify-content: center; gap: 5px; margin: 15px 0 0; color: var(--muted); font-size: 11px; }
+      .dialog-switch button { padding: 0; border: 0; background: transparent; color: #ff9ac1; font: inherit; font-weight: 750; cursor: pointer; }
+      .comment-list { display: grid; gap: 15px; margin-bottom: 17px; }
+      .comment { display: grid; grid-template-columns: 32px minmax(0,1fr); gap: 10px; align-items: start; }
+      .comment .avatar { width: 30px; height: 30px; }
+      .comment strong { display: block; margin: 2px 0 4px; font-size: 11px; }
+      .comment p { margin: 0; color: #d2d2dd; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+      .profile-card { display: grid; justify-items: center; gap: 11px; padding: 7px 0 2px; text-align: center; }
+      .profile-card .avatar { width: 64px; height: 64px; font-size: 19px; }
+      .profile-card h3 { margin: 2px 0 0; font-size: 18px; }
+      .profile-card p { margin: 0; color: var(--muted); font-size: 12px; }
+      .profile-stats { display: flex; gap: 26px; padding: 12px 0; color: #dadae4; font-size: 11px; }
+      .profile-stats strong { display: block; margin-bottom: 3px; color: white; font-size: 15px; }
+      .search-results { display: grid; gap: 8px; }
+      .search-result { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid rgba(255,255,255,.08); border-radius: 10px; background: rgba(255,255,255,.035); color: #ececf3; font-size: 12px; text-align: left; cursor: pointer; }
+      .search-result span:last-child { color: #9697a7; font-size: 10px; }
+      .search-empty { color: var(--muted); font-size: 12px; }
+
+      .dialog {
+        width: min(430px, calc(100vw - 32px));
+        max-height: min(680px, calc(100dvh - 32px));
+        padding: 0;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 20px;
+        background: #11121b;
+        color: var(--white);
+        box-shadow: 0 24px 100px rgba(0,0,0,.7), 0 0 50px rgba(255,77,141,.1);
+      }
+      .dialog::backdrop { background: rgba(4,5,10,.74); backdrop-filter: blur(8px); }
+      .dialog-shell { display: flex; max-height: inherit; flex-direction: column; }
+      .dialog-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 19px 21px;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+      .dialog-head h2 { margin: 0; font-size: 17px; letter-spacing: -.3px; }
+      .dialog-close {
+        display: grid;
+        width: 32px;
+        height: 32px;
+        place-items: center;
+        border: 1px solid rgba(255,255,255,.1);
+        border-radius: 50%;
+        background: rgba(255,255,255,.05);
+        color: #dedee8;
+        cursor: pointer;
+      }
+      .dialog-content { padding: 20px; overflow-y: auto; }
+      .dialog-note { margin: 0 0 17px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+      .dialog-form { display: grid; gap: 12px; }
+      .dialog-form label { display: grid; gap: 6px; color: #c9c9d5; font-size: 11px; font-weight: 700; }
+      .dialog-form input, .dialog-form textarea {
+        width: 100%;
+        padding: 12px 13px;
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 10px;
+        outline: 0;
+        background: rgba(255,255,255,.045);
+        color: white;
+        font: inherit;
+        font-size: 13px;
+      }
+      .dialog-form input:focus, .dialog-form textarea:focus { border-color: var(--pink); }
+      .dialog-form textarea { min-height: 84px; resize: vertical; }
+      .primary-button {
+        min-height: 42px;
+        border: 0;
+        border-radius: 10px;
+        background: linear-gradient(100deg, #ff4d8d, #b65cff);
+        color: white;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .secondary-button {
+        min-height: 40px;
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 10px;
+        background: rgba(255,255,255,.04);
+        color: #eee;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .dialog-switch { display: flex; justify-content: center; gap: 5px; margin: 15px 0 0; color: var(--muted); font-size: 11px; }
+      .dialog-switch button { padding: 0; border: 0; background: transparent; color: #ff9ac1; font: inherit; font-weight: 750; cursor: pointer; }
+      .comment-list { display: grid; gap: 15px; margin-bottom: 17px; }
+      .comment { display: grid; grid-template-columns: 32px minmax(0,1fr); gap: 10px; align-items: start; }
+      .comment .avatar { width: 30px; height: 30px; }
+      .comment strong { display: block; margin: 2px 0 4px; font-size: 11px; }
+      .comment p { margin: 0; color: #d2d2dd; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+      .profile-card { display: grid; justify-items: center; gap: 11px; padding: 7px 0 2px; text-align: center; }
+      .profile-card .avatar { width: 64px; height: 64px; font-size: 19px; }
+      .profile-card h3 { margin: 2px 0 0; font-size: 18px; }
+      .profile-card p { margin: 0; color: var(--muted); font-size: 12px; }
+      .profile-stats { display: flex; gap: 26px; padding: 12px 0; color: #dadae4; font-size: 11px; }
+      .profile-stats strong { display: block; margin-bottom: 3px; color: white; font-size: 15px; }
+      .search-results { display: grid; gap: 8px; }
+      .search-result {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 10px;
+        background: rgba(255,255,255,.035);
+        color: #ececf3;
+        font-size: 12px;
+        text-align: left;
+        cursor: pointer;
+      }
+      .search-result span:last-child { color: #9697a7; font-size: 10px; }
+      .search-empty { color: var(--muted); font-size: 12px; }
+      .form-message { min-height: 15px; margin: 0; color: #ffb3cd; font-size: 11px; }
+
+      @keyframes orb-drift {
+        from { transform: translate3d(0, 0, 0); }
+        to { transform: translate3d(-12px, 10px, 0); }
+      }
+
+      @keyframes hero-float {
+        0%, 100% { transform: translate(-50%, 0); }
+        50% { transform: translate(-50%, -8px); }
+      }
+
+      @keyframes slash {
+        0%, 20% { left: -130%; opacity: 0; }
+        26% { opacity: .95; }
+        40%, 100% { left: 100%; opacity: 0; }
+      }
+
+      @keyframes spark {
+        0%, 21% { transform: translate(-40px, 22px) scale(.2); opacity: 0; }
+        29% { transform: translate(0, 0) scale(1.4); opacity: 1; }
+        39%, 100% { transform: translate(58px, -32px) scale(.1); opacity: 0; }
+      }
+
+      @keyframes progress {
+        from { width: 0; }
+        to { width: 100%; }
+      }
+
+      @keyframes heart-pop {
+        50% { transform: scale(1.55); }
+      }
+
+      @media (min-width: 1200px) {
+        .feed { width: min(100%, 410px); }
+      }
+
+      @media (max-width: 1050px) {
+        .app { grid-template-columns: 210px minmax(0, 1fr); }
+        .side-panel { display: none; }
+      }
+
+      @media (max-width: 650px) {
+        .app { display: block; min-height: 0; }
+        .sidebar, .side-panel { display: none; }
+        .feed-column { display: block; height: 100dvh; padding: 0; }
+        .feed-top {
+          position: absolute;
+          top: max(48px, calc(env(safe-area-inset-top) + 42px));
+          left: 50%;
+          display: flex;
+          width: auto;
+          height: 42px;
+          gap: clamp(14px, 4vw, 20px);
+          transform: translateX(-50%);
+        }
+        .feed-tab { flex: 0 0 auto; font-size: 12px; white-space: nowrap; }
+        .reel-top {
+          top: max(102px, calc(env(safe-area-inset-top) + 94px));
+          right: 18px;
+          left: 18px;
+          gap: 10px;
+        }
+        .reel-top > span:first-child { max-width: 58%; line-height: 1.4; }
+        .reel-top .quality { flex: 0 0 auto; font-size: 8px; }
+        .mobile-brand {
+          position: absolute;
+          z-index: 9;
+          top: max(14px, env(safe-area-inset-top));
+          left: 15px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          filter: drop-shadow(0 2px 8px rgba(0,0,0,.8));
+        }
+        .mobile-brand .brand-mark { width: 31px; height: 31px; border-radius: 10px; font-size: 12px; }
+        .mobile-brand .brand-name { font-size: 17px; }
+        .feed { width: 100%; height: 100%; border-radius: 0; }
+        .reel { min-height: 100dvh; height: 100dvh; }
+        .sky-orb { top: 16%; }
+        .character { bottom: 27%; }
+        .reel-copy { padding: 92px 65px calc(82px + env(safe-area-inset-bottom)) 18px; }
+        .reel-actions { bottom: calc(90px + env(safe-area-inset-bottom)); right: 14px; }
+        .mobile-nav {
+          position: absolute;
+          z-index: 10;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          display: flex;
+          height: calc(60px + env(safe-area-inset-bottom));
+          align-items: center;
+          justify-content: space-around;
+          padding-right: max(0px, env(safe-area-inset-right));
+          padding-left: max(0px, env(safe-area-inset-left));
+          padding-bottom: env(safe-area-inset-bottom);
+          border-top: 1px solid rgba(255,255,255,.1);
+          background: rgba(9,10,16,.76);
+          backdrop-filter: blur(18px);
+        }
+        .mobile-nav button {
+          display: grid;
+          min-width: 0;
+          min-height: 48px;
+          flex: 1;
+          gap: 3px;
+          justify-items: center;
+          padding: 4px 0;
+          border: 0;
+          background: transparent;
+          color: #a7a8b5;
+          font-size: 9px;
+          touch-action: manipulation;
+        }
+        .mobile-nav .nav-icon { color: inherit; }
+        .mobile-nav button.active { color: #fff; }
+        .mobile-nav button.active .nav-icon { color: var(--pink); }
+        .dialog { position: fixed; margin: auto 0 0; width: 100%; max-width: none; max-height: 82dvh; border-radius: 20px 20px 0 0; }
+        .dialog-shell { max-height: 82dvh; }
+        .dialog-content { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+        .dialog { position: fixed; margin: auto 0 0; width: 100%; max-width: none; max-height: 82dvh; border-radius: 20px 20px 0 0; }
+        .dialog-shell { max-height: 82dvh; }
+        .dialog-content { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+      }
+
+      :root {
+        --bg: #080711;
+        --panel: #100e1b;
+        --muted: #a9a2bb;
+        --pink: #ff5da8;
+        --cyan: #67ecf0;
+        --white: #fffaff;
+      }
+
+      body {
+        background:
+          radial-gradient(ellipse at 47% 8%, rgba(117,72,190,.16), transparent 36%),
+          radial-gradient(ellipse at 87% 82%, rgba(49,159,177,.075), transparent 27%),
+          var(--bg);
+      }
+
+      .sidebar {
+        position: relative;
+        background: linear-gradient(180deg, rgba(19,15,31,.92), rgba(9,9,16,.7));
+        border-right-color: rgba(201,165,255,.11);
+      }
+
+      .sidebar::after {
+        position: absolute;
+        top: 0;
+        right: -1px;
+        width: 1px;
+        height: 45%;
+        background: linear-gradient(transparent, rgba(255,93,168,.58), transparent);
+        content: "";
+        pointer-events: none;
+      }
+
+      .brand-mark {
+        border-radius: 13px 13px 13px 5px;
+        background: linear-gradient(145deg, rgba(255,93,168,.34), rgba(117,91,219,.23) 55%, rgba(103,236,240,.15));
+        box-shadow: 0 0 30px rgba(255,93,168,.19), inset 0 0 17px rgba(255,255,255,.08);
+      }
+
+      .brand-name { letter-spacing: -.8px; }
+
+      .nav-label { color: #8b819d; }
+
+      .nav-item {
+        min-height: 46px;
+        border: 1px solid transparent;
+        border-radius: 13px;
+      }
+
+      .nav-item:hover {
+        border-color: rgba(255,255,255,.055);
+        background: linear-gradient(100deg, rgba(255,255,255,.07), rgba(255,255,255,.015));
+      }
+
+      .nav-item.active {
+        border-color: rgba(255,93,168,.14);
+        background: linear-gradient(100deg, rgba(255,93,168,.18), rgba(122,85,201,.07) 62%, transparent);
+        box-shadow: inset 2px 0 0 var(--pink), 0 7px 24px rgba(255,93,168,.06);
+      }
+
+      .nav-item.active .nav-icon { color: #ff91bf; }
+
+      .side-note {
+        border-color: rgba(190,152,255,.15);
+        background:
+          radial-gradient(circle at 100% 0, rgba(255,93,168,.14), transparent 48%),
+          linear-gradient(140deg, rgba(91,62,139,.17), rgba(18,16,28,.88));
+        box-shadow: inset 0 1px rgba(255,255,255,.035);
+      }
+
+      .feed-column {
+        background: radial-gradient(ellipse at 50% 42%, rgba(83,54,140,.075), transparent 58%);
+      }
+
+      .feed-top { gap: clamp(16px, 3vw, 34px); }
+
+      .feed-tab {
+        padding: 12px 3px;
+        color: #9994a8;
+        font-size: 13px;
+        letter-spacing: .015em;
+        transition: color .2s;
+      }
+
+      .feed-tab:hover { color: #fff; }
+
+      .feed-tab.active::after {
+        height: 3px;
+        background: linear-gradient(90deg, var(--pink), #c27bff 68%, var(--cyan));
+        box-shadow: 0 0 15px rgba(255,93,168,.53);
+      }
+
+      .reel {
+        border: 1px solid rgba(229,207,255,.16);
+        border-radius: 22px;
+        background: #11101a;
+        box-shadow:
+          0 20px 65px rgba(0,0,0,.34),
+          0 0 32px rgba(128,73,194,.075),
+          inset 0 0 0 1px rgba(255,255,255,.025);
+      }
+
+      .reel:hover { border-color: rgba(255,153,202,.28); }
+
+      .scene::before {
+        background:
+          linear-gradient(180deg, rgba(9,9,17,.015) 35%, rgba(6,7,12,.82) 100%),
+          radial-gradient(circle at 18% 19%, rgba(255,255,255,.9) 0 1px, transparent 2px),
+          radial-gradient(circle at 76% 28%, rgba(255,255,255,.75) 0 1px, transparent 2px),
+          radial-gradient(circle at 28% 45%, rgba(255,210,238,.8) 0 1px, transparent 2px),
+          radial-gradient(circle at 88% 53%, rgba(255,255,255,.65) 0 1px, transparent 2px),
+          radial-gradient(circle at 12% 68%, rgba(178,229,255,.8) 0 1px, transparent 2px),
+          repeating-linear-gradient(125deg, transparent 0 54px, rgba(255,255,255,.022) 55px 56px);
+        animation: anime-stars 6s ease-in-out infinite alternate;
+      }
+
+      .scene::after {
+        background:
+          radial-gradient(ellipse at 50% 44%, transparent 18%, rgba(2,3,8,.56) 82%),
+          linear-gradient(110deg, transparent 42%, rgba(255,255,255,.035) 50%, transparent 57%);
+      }
+
+      .sky-orb {
+        border: 1px solid rgba(255,255,255,.22);
+        box-shadow: 0 0 48px rgba(255,144,188,.22);
+      }
+
+      .character {
+        filter: drop-shadow(0 14px 20px rgba(4,5,12,.5));
+      }
+
+      .face {
+        background:
+          radial-gradient(ellipse at 18% 70%, rgba(255,114,157,.27), transparent 18%),
+          radial-gradient(ellipse at 82% 70%, rgba(255,114,157,.27), transparent 18%),
+          linear-gradient(120deg, #f8d5cf, #d99aa0 78%);
+      }
+
+      .hair, .fringe {
+        filter: drop-shadow(0 3px 0 rgba(10,10,20,.2)) drop-shadow(0 0 15px rgba(255,93,168,.16));
+      }
+
+      .coat {
+        filter: drop-shadow(0 0 18px rgba(103,236,240,.13));
+      }
+
+      .reel-top { letter-spacing: .15em; }
+
+      .quality {
+        border-color: rgba(226,201,255,.28);
+        border-radius: 999px;
+        background: rgba(17,12,29,.42);
+      }
+
+      .reel-copy {
+        background: linear-gradient(180deg, transparent 0%, rgba(8,8,15,.44) 15%, rgba(8,8,15,.96) 100%);
+      }
+
+      .creator { gap: 10px; }
+
+      .avatar {
+        border-color: rgba(255,255,255,.55);
+        box-shadow: 0 0 16px rgba(255,93,168,.2);
+      }
+
+      .follow {
+        border-color: rgba(255,93,168,.62);
+        background: linear-gradient(110deg, rgba(255,93,168,.2), rgba(168,99,255,.14));
+        transition: background .2s, transform .2s;
+      }
+
+      .follow:hover { transform: translateY(-1px); }
+
+      .tags { color: #ffc0dc; }
+
+      .action .glyph {
+        border-color: rgba(255,255,255,.2);
+        background: rgba(17,14,27,.56);
+        box-shadow: inset 0 1px rgba(255,255,255,.06), 0 5px 18px rgba(0,0,0,.15);
+      }
+
+      .action:hover .glyph {
+        border-color: rgba(255,93,168,.46);
+        background: rgba(255,93,168,.16);
+      }
+
+      .progress {
+        background: rgba(255,255,255,.13);
+      }
+
+      .progress::before {
+        background: linear-gradient(90deg, #ff5da8, #aa73ff 52%, #67ecf0);
+        box-shadow: 0 0 14px rgba(255,93,168,.62);
+      }
+
+      .side-panel {
+        background: linear-gradient(180deg, rgba(17,14,27,.58), rgba(9,9,16,.74));
+        border-left-color: rgba(201,165,255,.11);
+      }
+
+      .search {
+        border-color: rgba(210,183,255,.12);
+        border-radius: 13px;
+        background: linear-gradient(120deg, rgba(255,255,255,.055), rgba(255,255,255,.018));
+      }
+
+      .genre { border-color: rgba(219,192,255,.12); }
+
+      .genre.hot {
+        border-color: rgba(255,93,168,.32);
+        background: linear-gradient(110deg, rgba(255,93,168,.16), rgba(144,91,218,.09));
+        color: #ffd1e4;
+      }
+
+      .trend-art { border: 1px solid rgba(255,255,255,.12); box-shadow: 0 4px 15px rgba(0,0,0,.24); }
+
+      .account-actions button:first-child {
+        border-color: rgba(255,93,168,.46);
+        background: linear-gradient(105deg, rgba(255,93,168,.22), rgba(136,80,214,.13));
+      }
+
+      .mobile-nav {
+        border-top-color: rgba(209,175,255,.12);
+        background: rgba(10,8,18,.84);
+      }
+
+      @keyframes anime-stars {
+        from { opacity: .65; }
+        to { opacity: 1; }
+      }
+
+      @media (max-width: 650px) {
+        .mobile-nav { background: rgba(10,8,18,.87); }
+        .reel { border: 0; border-radius: 0; }
+        .reel-copy { padding-bottom: calc(86px + env(safe-area-inset-bottom)); }
+        .reel-actions { bottom: calc(94px + env(safe-area-inset-bottom)); }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <aside class="sidebar">
+        <a class="brand" href="#" aria-label="AnimeTock home">
+          <span class="brand-mark">AT</span>
+          <span class="brand-name">anime<span>tock</span></span>
+        </a>
+
+        <section aria-label="Main navigation">
+          <p class="nav-label">Discover</p>
+          <nav class="nav-list">
+            <button class="nav-item active"><span class="nav-icon">⌂</span>For You</button>
+            <button class="nav-item"><span class="nav-icon">⌕</span>Explore anime</button>
+            <button class="nav-item"><span class="nav-icon">♡</span>Following</button>
+            <button class="nav-item"><span class="nav-icon">▣</span>My favorites</button>
+            <button class="nav-item" type="button" data-open-profile><span class="nav-icon">◉</span>Profile</button>
+          </nav>
+        </section>
+
+        <section aria-label="Anime categories">
+          <p class="nav-label">Your genres</p>
+          <nav class="nav-list">
+            <button class="nav-item"><span class="nav-icon">✦</span>Action</button>
+            <button class="nav-item"><span class="nav-icon">☾</span>Fantasy</button>
+            <button class="nav-item"><span class="nav-icon">♡</span>Romance</button>
+            <button class="nav-item"><span class="nav-icon">◈</span>Slice of life</button>
+          </nav>
+        </section>
+
+        <div class="side-note">
+          <strong>All anime, all the time ✨</strong>
+          <p>Discover fan edits, original animation, and anime trailers in one place.</p>
+        </div>
+        <div class="account-actions" aria-label="Account">
+          <button type="button" data-open-auth="login">Log in</button>
+          <button type="button" data-open-auth="signup">Sign up</button>
+        </div>
+      </aside>
+
+      <section class="feed-column" aria-label="Anime short-video feed">
+        <a class="brand mobile-brand" href="#" aria-label="AnimeTock home">
+          <span class="brand-mark">AT</span><span class="brand-name">anime<span>tock</span></span>
+        </a>
+        <div class="feed-top" role="tablist" aria-label="Feed type">
+          <button class="feed-tab active" role="tab" aria-selected="true">For you</button>
+          <button class="feed-tab" role="tab" aria-selected="false">Following</button>
+          <button class="feed-tab" role="tab" aria-selected="false">Trailers</button>
+        </div>
+
+        <div class="feed">
+          <article class="reel">
+            <div class="scene scene-one" aria-hidden="true">
+              <div class="sky-orb"></div>
+              <div class="mountain back"></div><div class="mountain"></div><div class="horizon"></div>
+              <div class="trail"></div><div class="trail two"></div><div class="spark"></div>
+              <div class="character">
+                <div class="hair"></div><div class="face"></div><div class="eye"></div><div class="eye right"></div>
+                <div class="fringe"></div><div class="neck"></div><div class="coat"></div>
+              </div>
+              <div class="film-grain"></div>
+            </div>
+            <div class="reel-top"><span>Original anime concept</span><span class="quality">4K · 00:18</span></div>
+            <div class="reel-copy">
+              <div class="creator"><span class="avatar">KO</span>@koi.motion <button class="follow">Follow</button></div>
+              <p>When the last star falls, the quietest hero wakes up ✨</p>
+              <div class="tags">#AnimeEdit&nbsp; #Fantasy&nbsp; #OriginalAnime</div>
+              <div class="soundline">♫ Starlight in the rain · animeTock audio</div>
+            </div>
+            <div class="reel-actions">
+              <button class="action like" aria-label="Like video" aria-pressed="false"><span class="glyph">♡</span><span class="count">12.8K</span></button>
+              <button class="action comments" aria-label="Comments"><span class="glyph">▢</span><span class="count">284</span></button>
+              <button class="action share" aria-label="Share video"><span class="glyph">↗</span><span class="count">Share</span></button>
+              <button class="action sound" aria-label="Toggle sound"><span class="glyph">♫</span><span class="count">Audio</span></button>
+            </div>
+            <div class="progress"></div>
+          </article>
+
+          <article class="reel">
+            <div class="scene scene-two" aria-hidden="true">
+              <div class="sky-orb"></div>
+              <div class="mountain back"></div><div class="mountain"></div><div class="horizon"></div>
+              <div class="trail"></div><div class="trail two"></div><div class="spark"></div>
+              <div class="character">
+                <div class="hair"></div><div class="face"></div><div class="eye"></div><div class="eye right"></div>
+                <div class="fringe"></div><div class="neck"></div><div class="coat"></div>
+              </div>
+              <div class="film-grain"></div>
+            </div>
+            <div class="reel-top"><span>Fan-made action edit</span><span class="quality">4K · 00:24</span></div>
+            <div class="reel-copy">
+              <div class="creator"><span class="avatar">RE</span>@rei.frames <button class="follow">Follow</button></div>
+              <p>One breath. One flash. The whole sky turns blue ⚡</p>
+              <div class="tags">#AnimeAction&nbsp; #AMV&nbsp; #BlueHour</div>
+              <div class="soundline">♫ Beyond the horizon · animeTock audio</div>
+            </div>
+            <div class="reel-actions">
+              <button class="action like" aria-label="Like video" aria-pressed="false"><span class="glyph">♡</span><span class="count">8,412</span></button>
+              <button class="action comments" aria-label="Comments"><span class="glyph">▢</span><span class="count">163</span></button>
+              <button class="action share" aria-label="Share video"><span class="glyph">↗</span><span class="count">Share</span></button>
+              <button class="action sound" aria-label="Toggle sound"><span class="glyph">♫</span><span class="count">Audio</span></button>
+            </div>
+            <div class="progress"></div>
+          </article>
+
+          <article class="reel">
+            <div class="scene scene-three" aria-hidden="true">
+              <div class="sky-orb"></div>
+              <div class="mountain back"></div><div class="mountain"></div><div class="horizon"></div>
+              <div class="trail"></div><div class="trail two"></div><div class="spark"></div>
+              <div class="character">
+                <div class="hair"></div><div class="face"></div><div class="eye"></div><div class="eye right"></div>
+                <div class="fringe"></div><div class="neck"></div><div class="coat"></div>
+              </div>
+              <div class="film-grain"></div>
+            </div>
+            <div class="reel-top"><span>Anime trailer · concept</span><span class="quality">4K · 00:31</span></div>
+            <div class="reel-copy">
+              <div class="creator"><span class="avatar">YU</span>@yume.studio <button class="follow">Follow</button></div>
+              <p>A promise made at sunset. A journey that changes everything 🌅</p>
+              <div class="tags">#AnimeTrailer&nbsp; #Adventure&nbsp; #NewWorld</div>
+              <div class="soundline">♫ First light · animeTock audio</div>
+            </div>
+            <div class="reel-actions">
+              <button class="action like" aria-label="Like video" aria-pressed="false"><span class="glyph">♡</span><span class="count">6,105</span></button>
+              <button class="action comments" aria-label="Comments"><span class="glyph">▢</span><span class="count">91</span></button>
+              <button class="action share" aria-label="Share video"><span class="glyph">↗</span><span class="count">Share</span></button>
+              <button class="action sound" aria-label="Toggle sound"><span class="glyph">♫</span><span class="count">Audio</span></button>
+            </div>
+            <div class="progress"></div>
+          </article>
+
+          <article class="reel">
+            <div class="scene scene-naruto" aria-hidden="true">
+              <div class="sky-orb"></div>
+              <div class="mountain back"></div><div class="mountain"></div><div class="horizon"></div>
+              <div class="trail"></div><div class="trail two"></div><div class="spark"></div>
+              <div class="character">
+                <div class="hair"></div><div class="face"></div><div class="eye"></div><div class="eye right"></div>
+                <div class="fringe"></div><div class="neck"></div><div class="coat"></div>
+              </div>
+              <div class="film-grain"></div>
+            </div>
+            <div class="reel-top"><span>Naruto · fan edit</span><span class="quality">Anime · 00:22</span></div>
+            <div class="reel-copy">
+              <div class="creator"><span class="avatar">SH</span>@shinobi.edits <button class="follow">Follow</button></div>
+              <p>Never give up on the path you choose. Believe in your own way 🍥</p>
+              <div class="tags">#Naruto&nbsp; #AnimeEdit&nbsp; #NinjaSpirit</div>
+              <div class="soundline">♫ Way of the ninja · fan edit audio</div>
+            </div>
+            <div class="reel-actions">
+              <button class="action like" aria-label="Like Naruto video" aria-pressed="false"><span class="glyph">♡</span><span class="count">24.2K</span></button>
+              <button class="action comments" aria-label="Comments"><span class="glyph">▢</span><span class="count">512</span></button>
+              <button class="action share" aria-label="Share video"><span class="glyph">↗</span><span class="count">Share</span></button>
+              <button class="action sound" aria-label="Toggle sound"><span class="glyph">♫</span><span class="count">Audio</span></button>
+            </div>
+            <div class="progress"></div>
+          </article>
+
+          <article class="reel">
+            <div class="scene scene-jjk" aria-hidden="true">
+              <div class="sky-orb"></div>
+              <div class="mountain back"></div><div class="mountain"></div><div class="horizon"></div>
+              <div class="trail"></div><div class="trail two"></div><div class="spark"></div>
+              <div class="character">
+                <div class="hair"></div><div class="face"></div><div class="eye"></div><div class="eye right"></div>
+                <div class="fringe"></div><div class="neck"></div><div class="coat"></div>
+              </div>
+              <div class="film-grain"></div>
+            </div>
+            <div class="reel-top"><span>Jujutsu Kaisen · fan edit</span><span class="quality">Anime · 00:26</span></div>
+            <div class="reel-copy">
+              <div class="creator"><span class="avatar">CU</span>@cursed.frames <button class="follow">Follow</button></div>
+              <p>When the shadows move, stand your ground and protect your friends ⚡</p>
+              <div class="tags">#JujutsuKaisen&nbsp; #AnimeEdit&nbsp; #Supernatural</div>
+              <div class="soundline">♫ Midnight exorcism · fan edit audio</div>
+            </div>
+            <div class="reel-actions">
+              <button class="action like" aria-label="Like Jujutsu Kaisen video" aria-pressed="false"><span class="glyph">♡</span><span class="count">31.7K</span></button>
+              <button class="action comments" aria-label="Comments"><span class="glyph">▢</span><span class="count">708</span></button>
+              <button class="action share" aria-label="Share video"><span class="glyph">↗</span><span class="count">Share</span></button>
+              <button class="action sound" aria-label="Toggle sound"><span class="glyph">♫</span><span class="count">Audio</span></button>
+            </div>
+            <div class="progress"></div>
+          </article>
+        </div>
+
+        <nav class="mobile-nav" aria-label="Mobile navigation">
+          <button class="active" type="button" data-mobile-action="home" aria-pressed="true"><span class="nav-icon">⌂</span>Home</button>
+          <button type="button" data-mobile-action="discover" aria-pressed="false"><span class="nav-icon">⌕</span>Discover</button>
+          <button type="button" data-mobile-action="create" aria-pressed="false"><span class="nav-icon">＋</span>Create</button>
+          <button type="button" data-mobile-action="favorites" aria-pressed="false"><span class="nav-icon">♡</span>Favorites</button>
+          <button type="button" data-mobile-action="profile" aria-pressed="false"><span class="nav-icon">◉</span>Profile</button>
+        </nav>
+      </section>
+
+      <aside class="side-panel">
+        <label class="search">
+          <span aria-hidden="true">⌕</span>
+          <input id="anime-search" type="search" placeholder="Search anime, creators, tags" aria-label="Search anime, creators, and tags" />
+        </label>
+        <section>
+          <h2 class="panel-heading">Pick your mood</h2>
+          <div class="genres">
+            <span class="genre hot">⚔ Action</span><span class="genre">✦ Fantasy</span>
+            <span class="genre">♡ Romance</span><span class="genre">☁ Cozy</span>
+            <span class="genre">◉ Sci-fi</span><span class="genre">☾ Drama</span>
+          </div>
+        </section>
+        <section>
+          <h2 class="panel-heading">Trending anime worlds</h2>
+          <div class="trending">
+            <div class="trend"><div class="trend-art"></div><div><p class="trend-title">Naruto</p><p class="trend-meta">Ninja adventure · fan edits</p></div></div>
+            <div class="trend"><div class="trend-art"></div><div><p class="trend-title">Jujutsu Kaisen</p><p class="trend-meta">Supernatural action · fan edits</p></div></div>
+            <div class="trend"><div class="trend-art"></div><div><p class="trend-title">Anime trailers</p><p class="trend-meta">New edits · Original concepts</p></div></div>
+          </div>
+        </section>
+        <p class="disclaimer">Fan-style anime community demo. Artwork is original CSS animation; no copyrighted show footage is streamed.</p>
+      </aside>
+    </main>
+    <dialog class="dialog" id="app-dialog" aria-labelledby="dialog-title">
+      <div class="dialog-shell">
+        <header class="dialog-head">
+          <h2 id="dialog-title">AnimeTock</h2>
+          <button class="dialog-close" type="button" aria-label="Close dialog">×</button>
+        </header>
+        <div class="dialog-content" id="dialog-content"></div>
+      </div>
+    </dialog>
+    <script>
+      const dialog = document.querySelector("#app-dialog");
+      const dialogTitle = document.querySelector("#dialog-title");
+      const dialogContent = document.querySelector("#dialog-content");
+      let currentUser = null;
+      let activeCommentReel = null;
+      const commentStore = new WeakMap();
+
+      function openDialog(title, content) {
+        dialogTitle.textContent = title;
+        dialogContent.replaceChildren(content);
+        dialog.showModal();
+      }
+
+      function makeAuthForm(mode) {
+        const isSignup = mode === "signup";
+        const form = document.createElement("form");
+        form.className = "dialog-form";
+        form.innerHTML = `
+          <p class="dialog-note">Demo account only. This page has no server: your password is never saved or sent anywhere.</p>
+          ${isSignup ? '<label>Display name<input name="username" autocomplete="nickname" required maxlength="24" placeholder="Your anime name"></label>' : ""}
+          <label>Email<input name="email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+          <label>Password<input name="password" type="password" autocomplete="${isSignup ? "new-password" : "current-password"}" required minlength="4" placeholder="At least 4 characters"></label>
+          <p class="form-message" role="status"></p>
+          <button class="primary-button" type="submit">${isSignup ? "Create demo account" : "Log in"}</button>
+        `;
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          const data = new FormData(form);
+          const typedName = isSignup ? String(data.get("username") || "").trim() : "";
+          const emailName = String(data.get("email") || "").split("@")[0].trim();
+          currentUser = (typedName || emailName || "anime-fan").slice(0, 24);
+          form.reset();
+          dialog.close();
+          updateAccountControls();
+        });
+
+        const wrapper = document.createElement("div");
+        wrapper.append(form);
+        const switcher = document.createElement("p");
+        switcher.className = "dialog-switch";
+        switcher.append(document.createTextNode(isSignup ? "Already have an account?" : "New to AnimeTock?"));
+        const switchButton = document.createElement("button");
+        switchButton.type = "button";
+        switchButton.textContent = isSignup ? "Log in" : "Sign up";
+        switchButton.addEventListener("click", () => showAuth(isSignup ? "login" : "signup"));
+        switcher.append(switchButton);
+        wrapper.append(switcher);
+        return wrapper;
+      }
+
+      function showAuth(mode) {
+        openDialog(mode === "signup" ? "Create your AnimeTock account" : "Log in to AnimeTock", makeAuthForm(mode));
+      }
+
+      function updateAccountControls() {
+        document.querySelectorAll("[data-open-auth]").forEach((button) => {
+          button.textContent = currentUser
+            ? `Signed in as ${currentUser}`
+            : button.dataset.openAuth === "login" ? "Log in" : "Sign up";
+        });
+      }
+
+      function showProfile() {
+        if (!currentUser) {
+          showAuth("login");
+          return;
+        }
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = `
+          <div class="profile-card">
+            <span class="avatar profile-avatar"></span>
+            <h3 class="profile-name"></h3>
+            <p>Your AnimeTock demo profile</p>
+            <div class="profile-stats"><span><strong>${document.querySelectorAll(".like.liked").length}</strong>Likes</span><span><strong>${document.querySelectorAll(".follow.following").length}</strong>Following</span></div>
+            <p class="dialog-note">Your demo profile exists only in this browser tab.</p>
+            <button class="secondary-button signout" type="button">Log out</button>
+          </div>
+        `;
+        wrapper.querySelector(".profile-avatar").textContent = currentUser.slice(0, 2).toUpperCase();
+        wrapper.querySelector(".profile-name").textContent = currentUser;
+        wrapper.querySelector(".signout").addEventListener("click", () => {
+          currentUser = null;
+          updateAccountControls();
+          dialog.close();
+        });
+        openDialog("Your profile", wrapper);
+      }
+
+      function getComments(reel) {
+        let comments = commentStore.get(reel);
+        if (!comments) {
+          comments = [
+            { name: "sora.days", text: "The colors and atmosphere are so dreamy ✨" },
+            { name: "mika_draws", text: "Need a whole series with this character!" }
+          ];
+          commentStore.set(reel, comments);
+        }
+        return comments;
+      }
+
+      function showComments(reel) {
+        activeCommentReel = reel;
+        const wrapper = document.createElement("div");
+        const list = document.createElement("div");
+        list.className = "comment-list";
+        const comments = getComments(reel);
+        if (!comments.length) {
+          const empty = document.createElement("p");
+          empty.className = "dialog-note";
+          empty.textContent = "No comments yet. Start the conversation.";
+          list.append(empty);
+        }
+        comments.forEach((comment) => {
+          const row = document.createElement("div");
+          row.className = "comment";
+          const avatar = document.createElement("span");
+          avatar.className = "avatar";
+          avatar.textContent = comment.name.slice(0, 2).toUpperCase();
+          const body = document.createElement("div");
+          const name = document.createElement("strong");
+          name.textContent = `@${comment.name}`;
+          const text = document.createElement("p");
+          text.textContent = comment.text;
+          body.append(name, text);
+          row.append(avatar, body);
+          list.append(row);
+        });
+
+        const form = document.createElement("form");
+        form.className = "dialog-form";
+        form.innerHTML = `<label for="new-comment">Add a comment</label><textarea id="new-comment" name="comment" maxlength="240" required placeholder="Share a kind thought..."></textarea><p class="form-message">Comments stay in this browser tab.</p><button class="primary-button" type="submit">Post comment</button>`;
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          const input = form.elements.namedItem("comment");
+          const text = input.value.trim();
+          if (!text || !activeCommentReel) return;
+          const updated = getComments(activeCommentReel);
+          updated.push({ name: currentUser || "anime-fan", text });
+          showComments(activeCommentReel);
+        });
+        wrapper.append(list, form);
+        openDialog("Comments", wrapper);
+        dialogContent.querySelector("textarea")?.focus();
+      }
+
+      function showSearch() {
+        const wrapper = document.createElement("div");
+        const form = document.createElement("form");
+        form.className = "dialog-form";
+        form.innerHTML = `<label for="dialog-search">Search anime, creators, and tags<input id="dialog-search" type="search" placeholder="Try Naruto or fantasy" autocomplete="off"></label><div class="search-results" aria-live="polite"></div>`;
+        const input = form.querySelector("input");
+        const results = form.querySelector(".search-results");
+        const renderResults = () => {
+          const query = input.value.trim().toLocaleLowerCase();
+          results.replaceChildren();
+          const matches = [...document.querySelectorAll(".reel")].filter((reel) => !query || reel.textContent.toLocaleLowerCase().includes(query));
+          if (!matches.length) {
+            const empty = document.createElement("p");
+            empty.className = "search-empty";
+            empty.textContent = "No anime clips found for that search.";
+            results.append(empty);
+            return;
+          }
+          matches.forEach((reel) => {
+            const result = document.createElement("button");
+            result.className = "search-result";
+            result.type = "button";
+            const name = document.createElement("span");
+            name.textContent = reel.querySelector(".reel-top span").textContent;
+            const creator = document.createElement("span");
+            creator.textContent = reel.querySelector(".creator").textContent.replace("Follow", "").trim();
+            result.append(name, creator);
+            result.addEventListener("click", () => {
+              filterReels("");
+              document.querySelector("#anime-search").value = "";
+              reel.scrollIntoView({ behavior: "smooth", block: "start" });
+              dialog.close();
+            });
+            results.append(result);
+          });
+        };
+        input.addEventListener("input", renderResults);
+        renderResults();
+        wrapper.append(form);
+        openDialog("Find your next anime edit", wrapper);
+        dialogContent.querySelector("#dialog-search").focus();
+      }
+
+      function filterReels(query) {
+        const normalized = query.trim().toLocaleLowerCase();
+        document.querySelectorAll(".reel").forEach((reel) => {
+          reel.hidden = normalized !== "" && !reel.textContent.toLocaleLowerCase().includes(normalized);
+        });
+      }
+
+      document.querySelector(".dialog-close").addEventListener("click", () => dialog.close());
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) dialog.close();
+      });
+
+      document.querySelector("#anime-search").addEventListener("input", (event) => {
+        filterReels(event.target.value);
+      });
+
+      document.querySelectorAll(".like").forEach((button) => {
+        button.addEventListener("click", () => {
+          const liked = button.getAttribute("aria-pressed") === "true";
+          button.setAttribute("aria-pressed", String(!liked));
+          button.classList.toggle("liked", !liked);
+          button.querySelector(".glyph").textContent = liked ? "♡" : "♥";
+        });
+      });
+
+      document.querySelectorAll(".comments").forEach((button) => {
+        button.addEventListener("click", () => showComments(button.closest(".reel")));
+      });
+
+      document.querySelectorAll(".follow").forEach((button) => {
+        button.addEventListener("click", () => {
+          const following = button.classList.toggle("following");
+          button.textContent = following ? "Following" : "Follow";
+        });
+      });
+
+      document.querySelectorAll(".feed-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          document.querySelectorAll(".feed-tab").forEach((item) => {
+            item.classList.remove("active");
+            item.setAttribute("aria-selected", "false");
+          });
+          tab.classList.add("active");
+          tab.setAttribute("aria-selected", "true");
+          if (tab.textContent.trim() === "Trailers") {
+            document.querySelector("#anime-search").value = "trailer";
+            filterReels("trailer");
+          } else {
+            document.querySelector("#anime-search").value = "";
+            filterReels("");
+          }
+        });
+      });
+
+      document.querySelectorAll(".nav-item").forEach((item) => {
+        item.addEventListener("click", () => {
+          document.querySelectorAll(".nav-item").forEach((nav) => nav.classList.remove("active"));
+          item.classList.add("active");
+          if (item.hasAttribute("data-open-profile")) {
+            showProfile();
+            return;
+          }
+          if (item.textContent.toLocaleLowerCase().includes("explore")) {
+            document.querySelector("#anime-search").focus();
+          } else if (item.textContent.toLocaleLowerCase().includes("favorites")) {
+            document.querySelectorAll(".reel").forEach((reel) => {
+              reel.hidden = !reel.querySelector(".like").classList.contains("liked");
+            });
+          } else {
+            filterReels("");
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-open-auth]").forEach((button) => {
+        button.addEventListener("click", () => currentUser ? showProfile() : showAuth(button.dataset.openAuth));
+      });
+      document.querySelectorAll(".mobile-nav button").forEach((button) => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll(".mobile-nav button").forEach((item) => item.classList.remove("active"));
+          document.querySelectorAll(".mobile-nav button").forEach((item) => item.setAttribute("aria-pressed", "false"));
+          button.classList.add("active");
+          button.setAttribute("aria-pressed", "true");
+          if (button.dataset.mobileAction === "profile") showProfile();
+          else if (button.dataset.mobileAction === "discover") showSearch();
+          else if (button.dataset.mobileAction === "create") showAuth("signup");
+          else if (button.dataset.mobileAction === "favorites") {
+            document.querySelectorAll(".reel").forEach((reel) => {
+              reel.hidden = !reel.querySelector(".like").classList.contains("liked");
+            });
+          } else {
+            document.querySelector("#anime-search").value = "";
+            filterReels("");
+            document.querySelector(".feed").scrollTo({ top: 0, behavior: "smooth" });
+          }
+        });
+      });
+
+      document.querySelectorAll(".share").forEach((button) => {
+        button.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(window.location.href);
+            button.querySelector(".count").textContent = "Copied!";
+            window.setTimeout(() => { button.querySelector(".count").textContent = "Share"; }, 1400);
+          } catch (error) {
+            button.querySelector(".count").textContent = "Copy unavailable";
+            window.setTimeout(() => { button.querySelector(".count").textContent = "Share"; }, 1600);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
