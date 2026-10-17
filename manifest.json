@@ -1,18 +1,30 @@
 {
-  "name": "AniStream - Anime Episode Guide",
-  "short_name": "AniStream",
-  "description": "Anime episode guides with links to licensed streaming options.",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "orientation": "any",
-  "background_color": "#080b18",
-  "theme_color": "#806bff",
-  "icons": [
-    {
-      "src": "./anistream-icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ]
+    "name":  "AniStream - Anime Episode Guide",
+    "short_name":  "AniStream",
+    "description":  "Anime episode guides with links to licensed streaming options.",
+    "start_url":  "./index.html",
+    "display":  "standalone",
+    "orientation":  "any",
+    "background_color":  "#080b18",
+    "theme_color":  "#806bff",
+    "icons":  [
+                  {
+                      "purpose":  "any maskable",
+                      "type":  "image/svg+xml",
+                      "sizes":  "any",
+                      "src":  "./anistream-icon.svg"
+                  },
+                  {
+                      "purpose":  "any",
+                      "type":  "image/png",
+                      "sizes":  "192x192",
+                      "src":  "./anistream-icon-192.png"
+                  },
+                  {
+                      "purpose":  "any maskable",
+                      "type":  "image/png",
+                      "sizes":  "512x512",
+                      "src":  "./anistream-icon.png"
+                  }
+              ]
 }
