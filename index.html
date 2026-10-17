@@ -85,6 +85,142 @@
       z-index: 10;
     }
 
+    .intro-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      padding: 24px;
+      background:
+        radial-gradient(ellipse at 50% 46%, rgba(115, 75, 255, 0.2), transparent 38%),
+        radial-gradient(ellipse at 50% 105%, rgba(255, 62, 151, 0.12), transparent 48%),
+        #090817;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.48s ease, visibility 0.48s ease;
+    }
+
+    .intro-screen::before,
+    .intro-screen::after {
+      position: absolute;
+      inset: -50%;
+      content: "";
+      pointer-events: none;
+    }
+
+    .intro-screen::before {
+      background: repeating-conic-gradient(from 0deg at 50% 50%, transparent 0deg 8deg, rgba(171, 147, 255, 0.035) 8.2deg 8.45deg, transparent 8.7deg 16deg);
+      animation: introStarfield 24s linear infinite;
+    }
+
+    .intro-screen::after {
+      inset: auto 0 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(99, 237, 255, 0.6), rgba(255, 79, 154, 0.6), transparent);
+      box-shadow: 0 0 26px rgba(150, 107, 255, 0.45);
+    }
+
+    .intro-screen.is-leaving {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .intro-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      width: min(100%, 440px);
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .intro-logo {
+      display: block;
+      width: min(360px, 78vw);
+      height: auto;
+      overflow: visible;
+      filter: drop-shadow(0 0 26px rgba(151, 91, 255, 0.24));
+      animation: introLogoReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .intro-tagline {
+      margin-top: 19px;
+      color: #bdc5e6;
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      animation: introTaglineReveal 0.6s 0.22s ease both;
+    }
+
+    .intro-loading {
+      width: min(170px, 44vw);
+      height: 2px;
+      margin-top: 28px;
+      overflow: hidden;
+      border-radius: var(--radius-full);
+      background: rgba(205, 195, 255, 0.13);
+      animation: introTaglineReveal 0.45s 0.28s ease both;
+    }
+
+    .intro-loading span {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #7c6cff, #69eaff, #ff5ea8);
+      box-shadow: 0 0 12px rgba(144, 111, 255, 0.7);
+      transform: scaleX(0);
+      transform-origin: left;
+      animation: introLoadingSweep 1.18s 0.12s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .intro-skip {
+      position: absolute;
+      top: max(18px, env(safe-area-inset-top));
+      right: max(20px, env(safe-area-inset-right));
+      min-height: 42px;
+      padding: 0 15px;
+      border: 1px solid rgba(205, 195, 255, 0.2);
+      border-radius: var(--radius-full);
+      background: rgba(20, 17, 42, 0.7);
+      color: #d9d7ec;
+      font-size: 12px;
+      font-weight: 700;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .intro-skip:hover,
+    .intro-skip:focus-visible {
+      border-color: rgba(99, 237, 255, 0.55);
+      color: #fff;
+      outline: none;
+    }
+
+    @keyframes introStarfield {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes introLogoReveal {
+      from { opacity: 0; transform: translateY(16px) scale(0.92); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes introTaglineReveal {
+      from { opacity: 0; transform: translateY(7px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes introLoadingSweep {
+      to { transform: scaleX(1); }
+    }
+
     button {
       font-family: inherit;
       color: inherit;
@@ -3003,6 +3139,16 @@
         -webkit-backdrop-filter: blur(20px) saturate(145%);
       }
 
+      .intro-tagline {
+        margin-top: 15px;
+        font-size: 9px;
+        letter-spacing: 0.2em;
+      }
+
+      .intro-loading {
+        margin-top: 23px;
+      }
+
       .mobile-nav-btn {
         min-height: 58px;
         gap: 5px;
@@ -3158,10 +3304,27 @@
       #ambient-fx-canvas {
         display: none;
       }
+
+      .intro-screen,
+      .intro-screen *,
+      .intro-screen::before,
+      .intro-screen::after {
+        animation: none !important;
+        transition: none !important;
+      }
     }
   </style>
 </head>
 <body>
+
+  <div class="intro-screen" id="intro-screen" role="status" aria-label="AniStream is loading">
+    <button class="intro-skip" id="intro-skip" type="button">Skip intro</button>
+    <div class="intro-content">
+      <img class="intro-logo" src="./anistream-logo.svg" alt="AniStream" />
+      <p class="intro-tagline">Your next adventure starts here</p>
+      <div class="intro-loading" aria-hidden="true"><span></span></div>
+    </div>
+  </div>
 
   <!-- Ambient Interactive Canvas -->
   <canvas id="ambient-fx-canvas"></canvas>
@@ -4958,7 +5121,35 @@
     /* ===================================================
        INITIALIZATION & RENDERING
        =================================================== */
+    let introDismissTimer;
+
+    function dismissIntro() {
+      const intro = document.getElementById("intro-screen");
+      if (!intro || intro.classList.contains("is-leaving")) return;
+
+      if (introDismissTimer) window.clearTimeout(introDismissTimer);
+      intro.classList.add("is-leaving");
+
+      const removeIntro = (event) => {
+        if (event && (event.target !== intro || event.propertyName !== "opacity")) return;
+        intro.removeEventListener("transitionend", removeIntro);
+        intro.remove();
+      };
+
+      intro.addEventListener("transitionend", removeIntro);
+      introDismissTimer = window.setTimeout(() => removeIntro(), 600);
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
+      const intro = document.getElementById("intro-screen");
+      const skipIntro = document.getElementById("intro-skip");
+      if (skipIntro) skipIntro.addEventListener("click", dismissIntro);
+
+      const shouldAnimateIntro = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!shouldAnimateIntro) {
+        if (intro) intro.remove();
+      }
+
       initAmbientCanvasFX();
       initUserProfile();
       initHeroBanner();
@@ -4980,6 +5171,9 @@
       });
 
       document.querySelectorAll("button").forEach(btn => attachRippleEffect(btn));
+      if (shouldAnimateIntro && intro) {
+        introDismissTimer = window.setTimeout(dismissIntro, 1300);
+      }
     });
 
     function showToast(message) {
